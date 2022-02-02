@@ -1,3 +1,6 @@
+'''from computer vision A-Z course
+   coded by trishit nath thakur'''
+
 
 '''Object Detection using SSD'''
 
@@ -10,11 +13,11 @@ from data import BaseTransform, VOC_CLASSES as labelmap
 
 
 
-
-
 '''Defining the function to perform Detections'''
 
-def detect(frame, net, transform):                                                                                   # -> net - SSD network, transform - transforming the frame to make it compatible with the network
+def detect(frame, net, transform):  # We define a detect function that will take as inputs, a frame, a ssd neural network, and a transformation to be applied on the images, and that will return the frame with the detector rectangle.
+    
+                                                                                                                     # -> net - SSD network, transform - transforming the frame to make it compatible with the network
     height, width = frame.shape[0], frame.shape[1]                                                                          
     frame_t = transform(frame)[0]                                                                                    # -> Transforming the original frame to match the dimensions & requirements of the NN    
     x = torch.from_numpy(frame_t).permute(2, 0, 1)                                                                   # -> Convert Numpy Array to Torch Tensor. Permute used to change color channels from RBG(0,1,2) to GRB(2,0,1) as network was trained on that sequence.
@@ -38,27 +41,25 @@ def detect(frame, net, transform):                                              
 
 
 
-'''Creating the SSD neural network'''
-net = build_ssd('test')
-net.load_state_dict(torch.load('ssd300_mAP_77.43_v2.pth', map_location = lambda storage, loc: storage))
+# Creating the SSD neural network
+net = build_ssd('test') # We create an object that is our neural network ssd.
+net.load_state_dict(torch.load('ssd300_mAP_77.43_v2.pth', map_location = lambda storage, loc: storage)) # We get the weights of the neural network from another one that is pretrained (ssd300_mAP_77.43_v2.pth).
 
 
 
 
-'''Creating the transformation'''
-transform = BaseTransform(net.size, (104/256.0, 117/256.0, 123/256.0))
+# Creating the transformation
+transform = BaseTransform(net.size, (104/256.0, 117/256.0, 123/256.0)) # We create an object of the BaseTransform class, a class that will do the required transformations so that the image can be the input of the neural network.
 
 
 
 
-'''Doing some Object Detection on a video'''
-reader = imageio.get_reader('funny_dog.mp4')
-fps = reader.get_meta_data()['fps']
-writer = imageio.get_writer('output.mp4', fps = fps)
-
-for i, frame in enumerate(reader):
-    frame = detect(frame, net.eval(), transform)
-    writer.append_data(frame)
-    print(i)
-    
-writer.close()
+# Doing some Object Detection on a video
+reader = imageio.get_reader('funny_dog.mp4') # We open the video.
+fps = reader.get_meta_data()['fps'] # We get the fps frequence (frames per second).
+writer = imageio.get_writer('output.mp4', fps = fps) # We create an output video with this same fps frequence.
+for i, frame in enumerate(reader): # We iterate on the frames of the output video:
+    frame = detect(frame, net.eval(), transform) # We call our detect function (defined above) to detect the object on the frame.
+    writer.append_data(frame) # We add the next frame in the output video.
+    print(i) # We print the number of the processed frame.
+writer.close() # We close the process that handles the creation of the output video.
